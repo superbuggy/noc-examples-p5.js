@@ -4,21 +4,19 @@
 
 function setup() {
   createCanvas(640, 360);
+  colorMode(HSL)
+  fill(23, 50, 100);
 }
 
 function draw() {
   background(51);
-
+  let y = amplitude * sin(TWO_PI * frameCount / period) + amplitude;
+  let x = frameCount % width;
+  const hue = map(x, 0, width, 0, 360);
   let period = 120;
-  let amplitude = 300;
+  let amplitude = height / 2;
 
-  // Calculating horizontal position according to formula for simple harmonic motion
-  let x = amplitude * sin(TWO_PI * frameCount / period);
-
-  stroke(255);
+  // stroke(255);
   strokeWeight(2);
-  fill(127);
-  translate(width / 2, height / 2);
-  line(0, 0, x, 0);
-  ellipse(x, 0, 48, 48);
+  point(x, y)
 }

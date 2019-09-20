@@ -1,16 +1,8 @@
-// The Nature of Code
-// Daniel Shiffman
-// http://natureofcode.com
-
-// Stochastic Tree
-// Renders a simple tree-like structure via recursion
-// Angles and number of branches are random
+let vector;
 
 function setup() {
-  var test = createP('Click mouse to generate a new tree');
-  test.position(10,372);
-
-  createCanvas(640, 360);
+  createCanvas(window.innerWidth, window.innerHeight);
+  squigglyLine();
   newTree();
 }
 
@@ -19,39 +11,72 @@ function draw() {
 }
 
 function mousePressed() {
+  squigglyLine();
   newTree();
   //redraw();
 }
 
 function newTree() {
-  background(51);
-
-  stroke(255);
+  background(111, 111, 222);
   push();
   // Start the tree from the bottom of the screen
-  translate(width/2, height);
+  translate(width / 2, height);
   // Start the recursive branching!
-  branch(120);
+  branch(height / 6);
   pop();
 }
 
+function squigglyLine (startX, startY, stopX, stopY) {
+  function nextPoint (x, y, theAngle, distance) {
+    return [(x + Math.cos(theAngle) * distance), (y - Math.sin(theAngle) * distance)]
+  }
+
+  const pointThickness = 4
+  // strokeWeight(pointThickness)
+
+  let theAngle = angle(startX, startY, stopX, stopY)
+
+  const numPoints = distance(startX, startY, stopX, stopY) / (0.5 * pointThickness)
+  let x = startX
+  let y = startY
+  for (let i = 1; i <= numPoints; i++) {
+    point(x, -y)
+    ;[x, y] = nextPoint(x, y, theAngle, pointThickness * 0.5)
+    let angleJitter = (Math.random() - .5) * .5
+    theAngle += angleJitter
+  }
+  return [x, y]
+}
 
 
-function branch(h) {
+function angle (startX, startY, stopX, stopY) {
+  const inRadians = atan((stopY-startY)/(stopX-startX))
+  const theAngle = inRadians * 180/Math.PI
+  return inRadians
+}
+
+function distance (startX, startY, stopX, stopY) {
+  return Math.sqrt( (stopX-startX)**2 + (stopY-startY)**2 )
+}
+
+function branch(h, count = 1) {
   // thickness of the branch is mapped to its length
-  var sw = map(h, 2, 120, 1, 5);
-  strokeWeight(sw);
+  var lineThickness = map(h, 2, height / 4, 1, 5);
+  strokeWeight(lineThickness);
   // Draw the actual branch
-  line(0, 0, 0, -h);
+  if (h * .75 < 5) {
+    stroke(0, 155, 0)
+  } else {
+    stroke(50 + count * 2, 40, 0)
+  }
+  let [x,y ] = squigglyLine(0, 0, 0, -h);
   // Move along to end
-  translate(0, -h);
-
-  // Each branch will be 2/3rds the size of the previous one
-  h *= 0.66;
+  translate(x, -y);
+  
+  h *= .75;
 
   // All recursive functions must have an exit condition!!!!
-  // Here, ours is when the length of the branch is 2 pixels or less
-  if (h > 2) {
+  if (h > 5) {
     // A random number of branches
     var n = Math.floor(random(1, 4));
     for (var i = 0; i < n; i++) {
@@ -59,7 +84,7 @@ function branch(h) {
       var theta = random(-PI/3, PI/3);
       push();      // Save the current state of transformation (i.e. where are we now)
       rotate(theta);     // Rotate by theta
-      branch(h);         // Ok, now call myself to branch again
+      branch(h, ++count);         // Ok, now call myself to branch again
       pop();       // Whenever we get back here, we "pop" in order to restore the previous matrix state
     }
   }
